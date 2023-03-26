@@ -14,11 +14,10 @@ from RFM import create_rfm_dataset,rfm_segmentation, segmentation_map
 
 st.title("Кластеризация методом K-means")  # заголовок
 
-
 def load_data():
     text_file = st.sidebar.file_uploader("Загрузите текстовый файл",
                                          type=["xlsx", "xls"])
-    global df
+    global df, rfm
     df = None
     if text_file is None:
         st.sidebar.warning("No file uploaded.")
@@ -28,36 +27,32 @@ def load_data():
                 "Количество строк для загрузки", min_value=1, max_value=4372, value=4372)
 
 
-
             df = pd.read_excel(text_file, nrows=num_rows)
             df = df[df['Quantity'] > 0]
 
-            global rfm
             rfm = create_rfm_dataset(df)
             rfm = rfm_segmentation(rfm)
             rfm = segmentation_map(rfm)
 
             rfm = rfm.dropna()
 
-            df = rfm.copy()
 
+        except ValueError as e:
+            st.write(e)
+            # st.sidebar.error(
+            #     "Неверный файл. Пожалуйста, загрузите текстовый файл.")
 
-
-
-
-
-        except ValueError:
-            st.sidebar.error(
-                "Неверный файл. Пожалуйста, загрузите текстовый файл.")
-    return df,rfm
 
 def main():
-    df, rfm= load_data()
-
-
+    load_data()
+    # rfm = None
+    #get local variable rfm from load_data()
+    rfm = globals().get('rfm')
 
 
     if df is not None:
+
+
         st.dataframe(rfm.head(10))
     else:
         # handle the case where no file was uploaded or an invalid file was uploaded
@@ -164,11 +159,9 @@ def main():
 
 
 if __name__ == "__main__":
-
-
-
+    # load_data()
     main()
-    st.write(f"количесто строк в датасете: {df.shape[0]}")
+    # st.write(f"количесто строк в датасете: {df.shape[0]}")
 
 
 

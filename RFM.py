@@ -19,11 +19,14 @@ def create_rfm_dataset(df):
     df['Quantity'] = df['Quantity'].astype(int)
 
     df = df.reset_index(drop=True)
+
+    now = pd.Timestamp('now')
     df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'])
+    df['Recency'] = (now - df['InvoiceDate']).dt.days
 
 
 
-    rfm = df.groupby('CustomerID').agg({'InvoiceDate': lambda x: (x.max() - x.min()).days,
+    rfm = df.groupby('CustomerID').agg({'InvoiceDate': lambda x: (now - x.min()).days,
                                         'InvoiceNo': lambda x: len(x),
                                         'TotalSum': lambda x: x.sum()})
     rfm.columns = ['Recency', 'Frequency', 'Monetary']
@@ -38,18 +41,20 @@ def create_rfm_dataset(df):
 
 
 def rfm_segmentation(rfm):
-    rfm['RecencyScore'] = pd.qcut(rfm['Recency'], 7, labels=[5, 4, 3, 2, 1],
-                                  duplicates='drop')
-    rfm['FrequencyScore'] = pd.qcut(rfm['Frequency'], 5)
-    rfm['MonetaryScore'] = pd.qcut(rfm['Monetary'], 5)
 
-    rfm['FrequencyScore'] = rfm['FrequencyScore'].cat.codes
-    rfm['FrequencyScore'] = rfm['FrequencyScore'] + 1
-    rfm['FrequencyScore'] = rfm['FrequencyScore'].astype(str)
 
-    rfm['MonetaryScore'] = rfm['MonetaryScore'].cat.codes
-    rfm['MonetaryScore'] = rfm['MonetaryScore'] + 1
-    rfm['MonetaryScore'] = rfm['MonetaryScore'].astype(str)
+    num_labels = 2
+
+
+    # rfm['RecencyScore'] = pd.qcut(rfm['Recency'], q=num_labels, labels=range(num_labels, 0, -1), duplicates='drop')
+    # rfm['FrequencyScore'] = pd.qcut(rfm['Frequency'], q=num_labels, labels=range(1, num_labels + 1), duplicates='drop')
+    # rfm['MonetaryScore'] = pd.qcut(rfm['Monetary'], q=num_labels, labels=range(1, num_labels + 1), duplicates='drop')
+    rfm['RecencyScore'] = rfm['Recency'].astype(int)
+    rfm['FrequencyScore'] = rfm['Frequency'].astype(int)
+    rfm['MonetaryScore'] = rfm['Monetary'].astype(int)
+
+
+
 
     rfm['RFMScore'] = rfm['RecencyScore'].astype(str) + rfm[
         'FrequencyScore'].astype(str) + rfm['MonetaryScore'].astype(str)
