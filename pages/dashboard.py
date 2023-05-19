@@ -36,7 +36,6 @@ else:
     st.write("Вот что вы загрузили:")
     st.dataframe(df.head(10))
 
-    df = df[:100]
     #rmf
 
     df = df[df['Quantity'] > 0]
@@ -55,6 +54,7 @@ else:
     client_type = st.sidebar.selectbox("Выберите тип клиента", rfm['Segment'].unique())
 
     # filter by client type
+    st.write("Вот клиенты, которые подходят под ваш выбор:")
     rfm = rfm[rfm['Segment'] == client_type]
     st.dataframe(rfm.head(10))
 
