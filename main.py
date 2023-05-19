@@ -54,6 +54,7 @@ def main():
 
 
         st.dataframe(rfm.head(10))
+        st.dataframe(rfm['Segment'].value_counts())
     else:
         # handle the case where no file was uploaded or an invalid file was uploaded
         st.error("No file uploaded or invalid file uploaded")
@@ -86,27 +87,12 @@ def main():
     st.write(f"Оптимальное количество кластеров: {k}")
 
     #kmeans
-    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans = KMeans(n_clusters=4, random_state=42)
     kmeans.fit(rfm[columns])
     rfm['cluster'] = kmeans.labels_
     st.dataframe(rfm['cluster'].value_counts())
 
-    #silhouette score
 
-    st.write(f"Silhouette score: {silhouette_score(rfm[columns], kmeans.labels_)}")
-
-    #plot
-    st.set_option('deprecation.showPyplotGlobalUse', False)
-
-    # plot
-    plt.plot(range(1, max_number_cluster), distortions, marker='o')
-    # plt.title(title)
-    plt.vlines(k, plt.ylim()[0], plt.ylim()[1], linestyles='dashed')
-    plt.xlabel('Number of clusters')
-    plt.ylabel('Distortion')
-    plt.show()
-
-    st.pyplot()
 
     # merge with original dataset
 
@@ -132,9 +118,9 @@ def main():
     #st.write(df['cluster'].value_counts())
 
 
-    #filter by cluster
-    cluster = st.number_input('Введите номер кластера', min_value=0, max_value=k, value=0)
 
+    #select cluster by name
+    cluster = st.selectbox('Выберите кластер', rfm['cluster'].unique())
 
 
     st.dataframe(rfm[rfm['cluster'] == cluster])

@@ -77,9 +77,34 @@ def segmentation_map(rfm):
         r'[4-5][4-5]': 'Lost Cheap Customers'
     }
 
-    rfm['Segment'] = rfm['RecencyScore'].astype(str) + rfm[
-        'FrequencyScore'].astype(str)
+    # rfm['Segment'] = rfm['RecencyScore'].astype(str) + rfm[
+    #     'FrequencyScore'].astype(str)
+    rfm['Segment'] = rfm['RecencyScore'].astype(str)
+
+
     rfm['Segment'] = rfm['Segment'].replace(seg_map, regex=True)
+
+    recency_threshold = rfm['RecencyScore'].mean()
+    frequency_threshold = rfm['FrequencyScore'].mean()
+    monetary_threshold = rfm['MonetaryScore'].mean()
+
+    # assign customers to segments based on their scores relative to the thresholds
+    rfm['Segment'] = np.where((rfm['RecencyScore'] <= recency_threshold) &
+                              (rfm['FrequencyScore'] <= frequency_threshold) &
+                              (rfm['MonetaryScore'] <= monetary_threshold),
+                              'Lost',
+                              np.where(
+                                  (rfm['RecencyScore'] > recency_threshold) &
+                                  (rfm[
+                                       'FrequencyScore'] <= frequency_threshold) &
+                                  (rfm['MonetaryScore'] <= monetary_threshold),
+                                  'Newcomers',
+                                  np.where((rfm[
+                                                'RecencyScore'] <= recency_threshold) &
+                                           (rfm[
+                                                'FrequencyScore'] > frequency_threshold),
+                                           'Loyal',
+                                           'Whales')))
 
     return rfm
 
